@@ -47,6 +47,37 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			add_action( 'template_redirect', array( $this, 'template_redirect' ), 1 );
 			add_action( 'wp_head', array( $this, 'header_code' ), 99 );
 			add_filter( 'post_type_link', array( $this, 'slide_link' ), 10, 2 );
+			add_filter( 'manage_edit-slides_columns', array( $this, 'manage_slides_columns' ) );
+			add_filter( 'manage_edit-slides_sortable_columns', array( $this, 'manage_slides_sortable' ) );
+			add_action( 'manage_slides_posts_custom_column', array( $this, 'manage_slides_custom_column' ), 5, 2 );
+		}
+		
+		function manage_slides_columns( $columns ) {
+			$columns['presentation'] = __( 'Presentations' );
+			$columns['order'] = __( 'Order' );
+			return $columns;
+		}
+		
+		function manage_slides_sortable( $columns ) {
+			$columns['order'] = 'menu_order';
+			return $columns;
+		}
+		
+		function manage_slides_custom_column( $col, $id ) {
+			switch( $col ) {
+				case 'presentation' : 
+					$termlist = array();
+					$terms = get_the_terms( $id, 'presentation' );
+					foreach ( $terms as $term ) {
+						$termlist[] = sprintf( '<a href="%1$s">%2$s</a>', admin_url( '/edit.php?presentation=' . $term->slug . '&post_type=' . get_post_type( $id ) ), $term->name );
+					}
+					echo implode( ' | ', $termlist );
+				break;
+				case 'order' : 
+					$p = get_post( $id );
+					echo $p->menu_order;
+				break;
+			}
 		}
 		
 		/**
@@ -699,7 +730,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		</select></p>
 </div>
 <p><label for="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php _e( 'Custom CSS for this slide:' ) ?></label><br/> 
-	<textarea cols="25" rows="8" class="widefat" name="<?php echo $this->_slide_settings_name( 'custom-css' ) ?>" id="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php echo stripslashes( $slide_settings['custom_css'] ) ?></textarea> <br/>
+	<textarea cols="25" rows="8" class="widefat" name="<?php echo $this->_slide_settings_name( 'custom-css' ) ?>" id="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php echo stripslashes( $slide_settings['custom-css'] ) ?></textarea> <br/>
 	<em><?php printf( __( 'Hint: The HTML ID of this slide is <strong>%s</strong>' ), 'rjs-slide-' . $post_id ) ?></em></p>
 <?php
 			return;
@@ -954,6 +985,11 @@ Reveal.initialize( RJSInitConfig );
 				'posts_per_page' => -1, 
 				'numberposts' => -1, 
 				'post_parent' => 0, 
+				'tax_query' => array( array( 
+					'taxonomy' => 'presentation', 
+					'field' => 'slug', 
+					'terms' => $term->slug
+				) ), 
 			) );
 			
 			do_action( 'rjs-before-presentation' );
@@ -1016,6 +1052,7 @@ Reveal.initialize( RJSInitConfig );
 <?php
 				$this->do_slide_content();
 				while ( $l->have_posts() ) : $l->the_post();
+				
 					$this->do_slide_content();
 				endwhile;
 ?>
