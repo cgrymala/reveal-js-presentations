@@ -26,7 +26,8 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			'backgroundTransition' => 'default', 
 			'viewDistance' => 3, 
 			'parallaxBackgroundImage' => '', 
-			'parallaxBackgroundSize' => ''
+			'parallaxBackgroundSize' => '', 
+			'customCSS' => null, 
 		);
 		var $themes = array( 'default', 'beige', 'sky', 'night', 'serif', 'simple', 'solarized', 'none' );
 		var $transitions = array( 'default', 'cube', 'page', 'concave', 'zoom', 'linear', 'fade', 'none' );
@@ -43,7 +44,9 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 			add_filter( 'template_include', array( $this, 'template_include' ), 99 );
+			add_action( 'template_redirect', array( $this, 'template_redirect' ), 1 );
 			add_action( 'wp_head', array( $this, 'header_code' ), 99 );
+			add_filter( 'post_type_link', array( $this, 'slide_link' ), 10, 2 );
 		}
 		
 		/**
@@ -65,6 +68,158 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				return $tmp;
 			
 			return plugin_dir_path( dirname( __FILE__ ) ) . '/templates/taxonomy-presentation.php';
+		}
+		
+		/**
+		 * Modify the permalink for an individual slide to lead to that point in the presentation
+		 */
+		function slide_link( $url, $post ) {
+			if ( 'slides' != get_post_type( $post ) )
+				return $url;
+			
+			$terms = get_the_terms( $post->ID, 'presentation' );
+			if ( false === $terms )
+				return $url;
+			
+			$pres = array_shift( $terms );
+			
+			if ( is_post_type_archive( 'slides' ) && is_main_query() ) {
+				return sprintf( '%1$s', trailingslashit( get_term_link( $pres ) ) );
+			}
+			
+			return sprintf( '%1$s#/rjs-slide-%2$d', trailingslashit( get_term_link( $pres ) ), $post->ID );
+		}
+		
+		/**
+		 * Perform any actions that need to happen during template_redirect
+		 */
+		function template_redirect() {
+			if ( is_singular( 'slides' ) ) {
+				$post_ID = get_the_ID();
+				$presentations = get_the_terms( $post_ID, 'presentation' );
+				if ( ! is_array( $presentations ) )
+					return;
+				$pres = array_shift( $presentations );
+				wp_safe_redirect( trailingslashit( get_term_link( $pres ) ) . '#/rjs-slide-' . $post_ID );
+			}
+			
+			if ( ! is_post_type_archive( 'slides' ) ) 
+				return;
+			
+			/*if ( function_exists( 'genesis' ) ) {
+				remove_all_actions( 'genesis_loop' );
+				add_action( 'genesis_loop', array( $this, 'do_presentation_list_genesis' ) );
+			} else {*/
+				add_action( 'loop_start', array( $this, 'alter_preso_list_query' ), 1 );
+				/*$this->alter_preso_list_query();*/
+				add_action( 'loop_end', 'wp_reset_query', 1 );
+				add_action( 'loop_end', 'wp_reset_postdata', 2 );
+			/*}*/
+		}
+		
+		/**
+		 * Alter the query to short-circuit the list of presentations
+		 */
+		function alter_preso_list_query() {
+			if ( ! is_main_query() )
+				return;
+			
+			global $wp_query, $post;
+			$presentations = get_terms( 'presentation', array(
+				'orderby' => 'id name', 
+				'order'   => 'ASC', 
+			) );
+			
+			if ( empty( $presentations ) ) {
+				print( "\n<!-- We could not find any presentations, so we're bouncing out and returning an empty query. -->\n" );
+				query_posts( array( 'name' => 'rjs-presentations-fake-slug-to-return-no-posts' ) );
+				return;
+			}
+			
+			$posts = array();
+			foreach( $presentations as $p ) {
+				$first = new WP_Query( array( 
+					'post_type' => 'slides', 
+					'post_status' => 'publish', 
+					'orderby' => 'menu_order date', 
+					'order' => 'ASC', 
+					'posts_per_page' => 1, 
+					'numberposts' => 1, 
+					'post_parent' => 0, 
+					'presentation' => $p->slug, 
+				) );
+				if ( property_exists( $first, 'posts' ) && is_array( $first->posts ) ) {
+					$tmp = array_shift( $first->posts );
+					if ( has_post_thumbnail( $tmp->ID ) ) {
+						$tmp->post_content = '<a href="' . get_term_link( $p ) . '">' . get_the_post_thumbnail( $tmp->ID, 'full', array( 'class' => 'alignnone' ) ) . '</a>';
+					}
+					$tmp->post_title = $p->name;
+					$posts[] = $tmp;
+				}
+			}
+			
+			if ( empty( $posts ) ) {
+				print( "\n<!-- Even though we found presentation terms, we found no posts inside any of them. -->\n" );
+				query_posts( array( 'name' => 'rjs-presentations-fake-slug-to-return-no-posts' ) );
+				return;
+			} else {
+				printf( "\n<!-- We found a total of %d posts inside of the various presentation terms, and are setting some vars to reflect that. -->\n", count( $posts ) );
+				$wp_query->posts = $posts;
+				$wp_query->post_count = count( $posts );
+				$wp_query->found_posts = count( $posts );
+				$wp_query->max_num_pages = 0;
+				$post = $posts[0];
+				return;
+			}
+		}
+		
+		/**
+		 * Output the list of presentations
+		 */
+		function do_presentation_list_genesis() {
+			$presentations = get_terms( 'presentation', array( 
+				'orderby' => 'id name', 
+				'order' => 'ASC', 
+			) );
+			
+			if ( empty( $presentations ) ) {
+?>
+<article class="entry not-found">
+	<h1><?php _e( 'Not Found' ) ?></h1>
+	<div class="entry-content">
+		<?php _e( 'Unfortunately, no presentations could be found.' ) ?>
+	</div>
+</article>
+<?php
+			}
+			
+			foreach ( $presentations as $p ) {
+				$first = new WP_Query( array( 
+					'post_type' => 'slides', 
+					'post_status' => 'publish', 
+					'orderby' => 'menu_order date', 
+					'order' => 'ASC', 
+					'posts_per_page' => 1, 
+					'numberposts' => 1, 
+					'post_parent' => 0, 
+					'presentation' => $p->slug, 
+				) );
+?>
+<article class="entry">
+	<h1><a href="<?php echo get_term_link( $p ) ?>"><?php echo apply_filters( 'the_title', $p->name ) ?></a></h1>
+	<div class="entry-content">
+<?php
+				if ( $first->have_posts() ) : while ( $first->have_posts() ) : $first->the_post();
+?>
+		<?php the_post_thumbnail( 'full', array( 'class' => 'aligncenter' ) ) ?>
+<?php
+				endwhile; endif;
+?>
+		<?php echo apply_filters( 'the_content', $p->description ) ?>
+	</div>
+</article>
+<?php
+			}
 		}
 		
 		/**
@@ -234,6 +389,14 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
             	<h3><?php _e( 'Advanced Presentation Settings' ) ?></h3>
             </th>
         </tr>
+		<tr>
+			<th scope="row" valign="top">
+				<label for="<?php $this->presentation_meta_id( 'customCSS' ) ?>"><?php _e( 'Custom CSS for this presentation:' ) ?></label>
+			</th>
+			<td>
+				<textarea class="widefat largetext" cols="25" rows="10" name="<?php $this->presentation_meta_name( 'customCSS' ) ?>" id="<?php $this->presentation_meta_id( 'customCSS' ) ?>"><?php echo stripslashes( $vals['customCSS'] ) ?></textarea>
+			</td>
+		</tr>
 <?php
 			$boolfields = array(
 				'controls' => __( 'Display slide controls?' ), 
@@ -343,6 +506,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				'transitionSpeed' => 'default', 
 				'backgroundTransition' => 'default', 
 				'parallaxBackgroundSize' => '', 
+				'customCSS' => null, 
 			);
 			
 			/**
@@ -402,6 +566,13 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 								$opts[$k] = $v;
 							} else {
 								$opts[$k] = $instance[$k];
+							}
+							break;
+						case 'customCSS' : 
+							if ( empty( $instance[$k] ) ) {
+								$opts[$k] = null;
+							} else {
+								$opts[$k] = esc_textarea( $instance[$k] );
 							}
 							break;
 						default : 
@@ -503,7 +674,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 </div>
 <div>
 	<p><input type="checkbox" name="<?php echo $this->_slide_settings_name( 'use-transition' ) ?>" id="<?php echo $this->_slide_settings_id( 'use-transition' ) ?>" value="1" class="checkbox"<?php checked( $slide_settings['use-transition'] ) ?>/> 
-	<label for="<?php echo $this->_slide_settings_id( 'use-image' ) ?>"><?php _e( 'Use the featured image as the background for this slide?' ) ?></label></p>
+	<label for="<?php echo $this->_slide_settings_id( 'use-transition' ) ?>"><?php _e( 'Use custom transition settings for this slide?' ) ?></label></p>
 	<p><label for="<?php echo $this->_slide_settings_id( 'transition' ) ?>"><?php _e( 'If so, what transition should be used for this slide:' ) ?></label> 
 		<select name="<?php echo $this->_slide_settings_name( 'transition' ) ?>" id="<?php echo $this->_slide_settings_id( 'transition' ) ?>">
 			<option value=""<?php selected( $slide_settings['transition'], null ) ?>><?php _e( 'Use the global presentation transition' ) ?></option>
@@ -528,7 +699,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		</select></p>
 </div>
 <p><label for="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php _e( 'Custom CSS for this slide:' ) ?></label><br/> 
-	<textarea cols="25" rows="8" class="widefat" name="<?php echo $this->_slide_settings_name( 'custom-css' ) ?>" id="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php echo esc_textarea( $slide_settings['custom_css'] ) ?></textarea> <br/>
+	<textarea cols="25" rows="8" class="widefat" name="<?php echo $this->_slide_settings_name( 'custom-css' ) ?>" id="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php echo stripslashes( $slide_settings['custom_css'] ) ?></textarea> <br/>
 	<em><?php printf( __( 'Hint: The HTML ID of this slide is <strong>%s</strong>' ), 'rjs-slide-' . $post_id ) ?></em></p>
 <?php
 			return;
@@ -779,7 +950,7 @@ Reveal.initialize( RJSInitConfig );
 				'post_type' => 'slides', 
 				'post_status' => 'publish', 
 				'orderby' => 'menu_order date', 
-				'order' => 'asc', 
+				'order' => 'ASC', 
 				'posts_per_page' => -1, 
 				'numberposts' => -1, 
 				'post_parent' => 0, 
@@ -800,6 +971,13 @@ Reveal.initialize( RJSInitConfig );
 				endwhile; 
 				
 				do_action( 'rjs-after-loop' );
+				
+				$this->customcss = '
+/**
+ * Custom CSS for presentation
+ */
+' . stripslashes( html_entity_decode( $term->customCSS ) ) . $this->customcss;
+				$this->customcss = apply_filters( 'rjs-custom-css', $this->customcss );
 ?>
 	</div>
 </div>
@@ -829,7 +1007,7 @@ Reveal.initialize( RJSInitConfig );
 				'posts_per_page' => -1, 
 				'post_status' => 'publish', 
 				'orderby' => 'menu_order date', 
-				'order' => 'asc'
+				'order' => 'ASC'
 			) );
 			
 			if ( $l->have_posts() ) :
@@ -855,7 +1033,7 @@ Reveal.initialize( RJSInitConfig );
 /**
  * Custom styles for slide ' . get_the_title() . '
  */
-' . $opts['custom-css'];
+' . stripslashes( html_entity_decode( $opts['custom-css'] ) );
 			}
 			
 			$slideatts = '';
