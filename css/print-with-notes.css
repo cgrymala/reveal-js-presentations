@@ -1,0 +1,40 @@
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+body {
+	font-size: 18pt;
+	height: 297mm;
+	width: 229mm;
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+@page {
+	size: letter portrait;
+	margin: 0;
+}
+
+/*********************************************
+ * SPEAKER NOTES
+ *********************************************/
+
+.reveal aside.notes {
+	display: block;
+	height: 140mm;
+	overflow: hidden;
+	font-size: 12pt;
+	background: #fff;
+	color: #000;
+	width: 100%;
+}
+
+.reveal .present {
+	height: 140mm;
+}

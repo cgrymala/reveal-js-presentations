@@ -1,7 +1,7 @@
 <?php
 if ( ! class_exists( 'Reveal_Presentations' ) ) {
 	class Reveal_Presentations {
-		var $version = '0.2';
+		var $version = '0.3.1';
 		var $defaults = array(
 			'theme'       => 'default', 
 			'controls'    => true, 
@@ -87,6 +87,9 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			if ( ! is_tax( 'presentation' ) )
 				return $template;
 			
+			if ( isset( $_GET['print-with-notes'] ) )
+				add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_print_with_notes_css' ) );
+			
 			$opt = $this->get_presentation_meta();
 			$templates = array();
 			if ( is_object( $opt ) && property_exists( $opt, 'slug' ) ) {
@@ -99,6 +102,11 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				return $tmp;
 			
 			return plugin_dir_path( dirname( __FILE__ ) ) . '/templates/taxonomy-presentation.php';
+		}
+		
+		function enqueue_print_with_notes_css() {
+			wp_register_style( 'pdf-print', plugins_url( '/reveal-js/css/print/pdf.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
+			wp_enqueue_style( 'print-with-notes', plugins_url( '/css/print-with-notes.css', dirname( __FILE__ ) ), array( 'pdf-print' ), $this->version, 'all' );
 		}
 		
 		/**
