@@ -50,19 +50,49 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			add_filter( 'manage_edit-slides_columns', array( $this, 'manage_slides_columns' ) );
 			add_filter( 'manage_edit-slides_sortable_columns', array( $this, 'manage_slides_sortable' ) );
 			add_action( 'manage_slides_posts_custom_column', array( $this, 'manage_slides_custom_column' ), 5, 2 );
+			add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
 		}
 		
+		/**
+		 * Add individual presentations to the admin menu
+		 */
+		function admin_menu() {
+			$presentations = get_terms( 'presentation' );
+			if ( empty( $presentations ) || is_wp_error( $presentations ) )
+				return;
+			
+			$urlformat = 'edit.php?presentation=%s&post_type=slides';
+			foreach ( $presentations as $p ) {
+				add_submenu_page( 
+					'edit.php?post_type=slides', 
+					$p->name, 
+					$p->name, 
+					'edit_posts', 
+					sprintf( $urlformat, $p->slug )
+				);
+			}
+		}
+		
+		/**
+		 * Add extra columns to the list of slides
+		 */
 		function manage_slides_columns( $columns ) {
 			$columns['presentation'] = __( 'Presentations' );
 			$columns['order'] = __( 'Order' );
 			return $columns;
 		}
 		
+		/**
+		 * Allow editors to sort the list of slides by menu order
+		 */
 		function manage_slides_sortable( $columns ) {
 			$columns['order'] = 'menu_order';
 			return $columns;
 		}
 		
+		/**
+		 * Handle the way information is output into the list of slides
+		 */
 		function manage_slides_custom_column( $col, $id ) {
 			switch( $col ) {
 				case 'presentation' : 
@@ -104,6 +134,9 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			return plugin_dir_path( dirname( __FILE__ ) ) . '/templates/taxonomy-presentation.php';
 		}
 		
+		/**
+		 * Make sure the print stylesheet is enqueued properly
+		 */
 		function enqueue_print_with_notes_css() {
 			wp_register_style( 'pdf-print', plugins_url( '/reveal-js/css/print/pdf.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
 			wp_enqueue_style( 'print-with-notes', plugins_url( '/css/print-with-notes.css', dirname( __FILE__ ) ), array( 'pdf-print' ), $this->version, 'all' );
@@ -344,10 +377,18 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			return;
 		}
 		
+		/**
+		 * Render the presentation settings fields when someone is 
+		 * 		adding a new presentation
+		 */
 		function add_presentation_form_fields( $term ) {
 			$this->_presentation_form_fields( $term, 'add' );
 		}
 		
+		/**
+		 * Render the presentation settings fields when someone is 
+		 * 		editing an existing presentation
+		 */
 		function edit_presentation_form_fields( $term ) {
 			$this->_presentation_form_fields( $term, 'edit' );
 		}
@@ -437,6 +478,9 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			</td>
 		</tr>
 <?php
+			/**
+			 * Set up an array of all fields that accept true/false values
+			 */
 			$boolfields = array(
 				'controls' => __( 'Display slide controls?' ), 
 				'progress' => __( 'Display presentation progress bar?' ), 
@@ -453,6 +497,9 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				'hideAddressBar' => __( 'Hide the address bar on mobile devices?' ), 
 				'previewLinks' => __( 'Open links in a popup preview iFrame?' ), 
 			);
+			/**
+			 * Render a checkbox input for each boolean field
+			 */
 			foreach ( $boolfields as $field=>$label ) {
 ?>
 		<tr>
@@ -620,14 +667,6 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 					}
 				}
 			}
-			
-			/*print( '<pre><code>' );
-			var_dump( $instance );
-			print( '</code></pre>' );
-			print( '<pre><code>' );
-			var_dump( $opts );
-			print( '</code></pre>' );
-			wp_die( 'Done' );*/
 			
 			update_option( sprintf( 'reveal-presentation-meta-%d', $term_id ), $opts );
 		}
