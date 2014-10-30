@@ -520,6 +520,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			<td>
 				<input type="number" name="<?php $this->presentation_meta_name( 'autoSlide' ) ?>" id="<?php $this->presentation_meta_id( 'autoSlide' ) ?>" value="<?php echo absint( $vals['autoSlide'] ) ?>"/>
 				<p style="font-style: italic"><?php _e( 'Leave this setting at 0 if you do not want the slides to advance automatically.' ) ?></p>
+				<p style="font-style: italic"><?php printf( __( '<strong>Warning:</strong> If you use this feature, it is highly recommended that you make sure "%s" is disabled.' ), $boolfields['history'] ) ?></p>
 			</td>
 		</tr>
 		<tr>
@@ -536,6 +537,45 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			</th>
 			<td>
 				<input type="number" name="<?php $this->presentation_meta_name( 'viewDistance' ) ?>" id="<?php $this->presentation_meta_id( 'viewDistance' ) ?>" value="<?php echo absint( $vals['viewDistance'] ) ?>"/>
+			</td>
+		</tr>
+<?php
+			$this->digital_signage_options( $vals );
+		}
+		
+		/**
+		 * Render the form fields for the experimental digital signage settings
+		 */
+		function digital_signage_options( $vals=array() ) {
+?>
+		<tr>
+			<th scope="col" colspan="2">
+				<h3><?php _e( 'Digital Signage Options' ) ?></h3>
+				<p style="font-style: italic">Experimental</p>
+			</th>
+		</tr>
+		<tr class="form-field">
+			<th scope="row" valign="top">
+				<label for="<?php $this->presentation_meta_id( 'autoPlayVideo' ) ?>"><?php _e( 'Attempt to auto-play any videos in the presentation?' ) ?></label>
+			</th>
+			<td>
+				<input type="checkbox" name="<?php $this->presentation_meta_name( 'autoPlayVideo' ) ?>" id="<?php $this->presentation_meta_id( 'autoPlayVideo' ) ?>" value="1"<?php checked( $vals['autoPlayVideo'] ) ?>/>
+			</td>
+		</tr>
+		<tr class="form-field">
+			<th scope="row" valign="top">
+				<label for="<?php $this->presentation_meta_id( 'poll' ) ?>"><?php _e( 'Automatically poll for slide changes?' ) ?></label>
+			</th>
+			<td>
+				<input type="checkbox" name="<?php $this->presentation_meta_name( 'poll' ) ?>" id="<?php $this->presentation_meta_id( 'poll' ) ?>" value="1"<?php checked( $vals['poll'] ) ?>/>
+			</td>
+		</tr>
+		<tr class="form-field">
+			<th scope="row" valign="top">
+				<label for="<?php $this->presentation_meta_id( 'pollInterval' ) ?>"><?php _e( 'How often should the polling occur (in milliseconds)?' ) ?></label>
+			</th>
+			<td>
+				<input type="number" name="<?php $this->presentation_meta_name( 'pollInterval' ) ?>" id="<?php $this->presentation_meta_id( 'pollInterval' ) ?>" value="<?php echo $vals['pollInterval'] ?>"/>
 			</td>
 		</tr>
 <?php
@@ -1184,6 +1224,18 @@ Reveal.initialize( RJSInitConfig );
 <?php
 
 			do_action( 'rjs-after-slide' );
+		}
+		
+		/**
+		 * Check for slide changes
+		 */
+		function poll_changes() {
+			/**
+			 * This function should receive a list of slide IDs, and a taxonomy term ID
+			 * It should then retrieve a list of the slide IDs in that term, and compare 
+			 * 		that list to the list that was sent to the function. If there are changes 
+			 * 		it should die with a 1; if no changes, it should die with a 0
+			 */
 		}
 	}
 	
