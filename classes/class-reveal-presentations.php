@@ -28,6 +28,9 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			'parallaxBackgroundImage' => '', 
 			'parallaxBackgroundSize' => '', 
 			'customCSS' => null, 
+			'autoplayVideo' => false, 
+			'poll'         => false, 
+			'pollInterval' => 0, 
 		);
 		var $themes = array( 'default', 'beige', 'sky', 'night', 'serif', 'simple', 'solarized', 'none' );
 		var $transitions = array( 'default', 'cube', 'page', 'concave', 'zoom', 'linear', 'fade', 'none' );
@@ -51,6 +54,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			add_filter( 'manage_edit-slides_sortable_columns', array( $this, 'manage_slides_sortable' ) );
 			add_action( 'manage_slides_posts_custom_column', array( $this, 'manage_slides_custom_column' ), 5, 2 );
 			add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
+			add_filter( 'rjs-custom-css', array( $this, 'parse_css' ), 99 );
 		}
 		
 		/**
@@ -460,9 +464,13 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			</td>
 		</tr>
 <?php
-			/**
-			 * Output some advanced settings fields
-			 */
+			$this->digital_signage_options( $vals );
+		}
+		
+		/**
+		 * Output some advanced settings fields
+		 */
+		function advanced_settings_fields( $vals=array() ) {
 ?>
 		<tr>
         	<th scope="col" colspan="2">
@@ -540,7 +548,6 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			</td>
 		</tr>
 <?php
-			$this->digital_signage_options( $vals );
 		}
 		
 		/**
@@ -560,6 +567,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			</th>
 			<td>
 				<input type="checkbox" name="<?php $this->presentation_meta_name( 'autoPlayVideo' ) ?>" id="<?php $this->presentation_meta_id( 'autoPlayVideo' ) ?>" value="1"<?php checked( $vals['autoPlayVideo'] ) ?>/>
+				<p style="font-style: italic"><?php _e( 'Currently only works with YouTube videos' ) ?></p>
 			</td>
 		</tr>
 		<tr class="form-field">
@@ -615,11 +623,14 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				'mouseWheel'  => false, 
 				'hideAddressBar' => true, 
 				'previewLinks' => false, 
+				'autoplayVideo' => false, 
+				'poll'        => false, 
 			);
 			
 			$numfields = array(
 				'autoSlide'   => 0, 
 				'viewDistance' => 3, 
+				'pollInterval' => ( HOUR_IN_SECONDS * 1000 ), 
 			);
 			
 			$urlfields = array(
@@ -901,6 +912,13 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 */
 		function print_footer_scripts() {
 			$term = $this->get_presentation_settings();
+			$sign_settings = array(
+				'autoplay' => $term['autoplayVideo'], 
+				'poll'     => $term['poll'], 
+				'pollInterval' => $term['pollInterval'], 
+			);
+			unset( $term['autoplayVideo'], $term['poll'], $term['pollInterval'] );
+			
 			$jsurl = plugins_url( 'reveal-js/', dirname( __FILE__ ) );
 			
 			do_action( 'rjs-before-footer-scripts' );
@@ -939,6 +957,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 ?>
 <script>
 var RJSInitConfig = <?php echo json_encode( $term ) ?>;
+var RJSSignageConfig = <?php echo json_encode( $sign_settings ) ?>;
 /*if( 'dependencies' in RJSInitConfig ) {
 	for( var i in RJSInitConfig.dependencies ) {
 		if( 'src' in RJSInitConfig.dependencies[i] ) {
@@ -961,6 +980,12 @@ RJSInitConfig.dependencies = [
 	{ src: '<?php echo $jsurl ?>plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
 ]
 Reveal.initialize( RJSInitConfig );
+if ( RJSSignageConfig.autoplayVideo ) {
+	/* Do YouTube API code here */
+}
+if ( RJSSignageConfig.poll ) {
+	/* Set up AJAX for polling here */
+}
 </script>
 <?php
 			do_action( 'rjs-after-footer-scripts' );
@@ -1167,6 +1192,9 @@ Reveal.initialize( RJSInitConfig );
 			endif;
 		}
 		
+		/**
+		 * Output the content of a single slide onto the page
+		 */
 		function do_slide_content() {
 			$opts = get_post_meta( get_the_ID(), '_rjs_slide_settings', true );
 			if ( ! empty( $opts['custom-css'] ) ) {
@@ -1174,7 +1202,9 @@ Reveal.initialize( RJSInitConfig );
 /**
  * Custom styles for slide ' . get_the_title() . '
  */
-' . stripslashes( html_entity_decode( $opts['custom-css'] ) );
+#' . sprintf( 'rjs-slide-%d', get_the_ID() ) . ' { 
+' . stripslashes( html_entity_decode( $opts['custom-css'] ) ) . '
+}';
 			}
 			
 			$slideatts = '';
@@ -1237,6 +1267,64 @@ Reveal.initialize( RJSInitConfig );
 			 * 		it should die with a 1; if no changes, it should die with a 0
 			 */
 		}
+		
+		/**
+		 * Parse some CSS and make sure it's valid before outputting it in the page
+		 */
+		function parse_css( $css=null ) {
+			if ( empty( $css ) )
+				return null;
+				
+			if ( ! class_exists( 'Jetpack_Custom_CSS' ) ) {
+				return $this->inst_css_parser( $css );
+			} else {
+				return Jetpack_Custom_CSS::minify( $css, 'sass' );
+			}
+		}
+		
+		/**
+		 * If we're not running JetPack, instantiate a custom CSS parser
+		 */
+		function inst_css_parser( $css=null ) {
+			if ( empty( $css ) )
+				return '';
+				
+			$css = $this->compile_scss( $css );
+			
+			safecss_class();
+			$csstidy = new csstidy();
+			$csstidy->optimise = new safecss( $csstidy );
+	
+			$csstidy->set_cfg( 'remove_bslash',              false );
+			$csstidy->set_cfg( 'compress_colors',            true );
+			$csstidy->set_cfg( 'compress_font-weight',       true );
+			$csstidy->set_cfg( 'remove_last_;',              true );
+			$csstidy->set_cfg( 'case_properties',            true );
+			$csstidy->set_cfg( 'discard_invalid_properties', true );
+			$csstidy->set_cfg( 'css_level',                  'CSS3.0' );
+			$csstidy->set_cfg( 'template', 'highest');
+			$csstidy->set_cfg( 'preserve_css',                false );
+			$csstidy->parse( $css );
+	
+			return $csstidy->print->plain();
+		}
+		
+		/**
+		 * Compile SCSS code
+		 * Only if JetPack is not available
+		 */
+		function compile_scss( $sass=null ) {
+			if ( empty( $sass ) )
+				return null;
+				
+			require_once( dirname( __FILE__ ) . '/inc/preprocessors/scss.inc.php' );
+			$compiler = new scssc();
+			try {
+				return $compiler->compile( $sass );
+			} catch ( Exception $e ) {
+				return $sass;
+			}
+		}
 	}
 	
 	function inst_reveal_presentations_obj() {
@@ -1244,4 +1332,48 @@ Reveal.initialize( RJSInitConfig );
 		$reveal_presentations_obj = new Reveal_Presentations;
 	}
 	inst_reveal_presentations_obj();
+}
+
+if ( ! function_exists( 'safecss_class' ) ) {
+	function safecss_class() {
+		// Wrapped so we don't need the parent class just to load the plugin
+		if ( class_exists('safecss') )
+			return;
+	
+		require_once( dirname( __FILE__ ) . '/inc/csstidy/class.csstidy.php' );
+	
+		class safecss extends csstidy_optimise {
+			function safecss( &$css ) {
+				return $this->csstidy_optimise( $css );
+			}
+	
+			function postparse() {
+				
+				/**
+				 * Do actions after parsing the css
+				 *
+				 * @since ?
+				 * @module Custom_CSS
+				 * @param safecss $obj
+				 **/
+				do_action( 'csstidy_optimize_postparse', $this );
+	
+				return parent::postparse();
+			}
+	
+			function subvalue() {
+	
+				/**
+				 * Do action before optimizing the subvalue
+				 *
+				 * @since ?
+				 * @module Custom_CSS
+				 * @param safecss $obj
+				 **/
+				do_action( 'csstidy_optimize_subvalue', $this );
+	
+				return parent::subvalue();
+			}
+		}
+	}
 }
