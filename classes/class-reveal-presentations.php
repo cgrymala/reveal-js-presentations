@@ -61,6 +61,19 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Add individual presentations to the admin menu
 		 */
 		function admin_menu() {
+			add_submenu_page( 
+				'edit.php?post_type=slides', 
+				__( 'Reveal Settings' ), 
+				__( 'Reveal Settings' ), 
+				'manage_options', 
+				'rjs-global-options', 
+				array( $this, 'options_page' )
+			);
+			
+			$vals = get_option( 'rjs_options', array( 'menu-config' => false ) );
+			if ( true !== $vals['menu-config'] )
+				return;
+			
 			$presentations = get_terms( 'presentation' );
 			if ( empty( $presentations ) || is_wp_error( $presentations ) )
 				return;
@@ -75,6 +88,22 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 					sprintf( $urlformat, $p->slug )
 				);
 			}
+		}
+		
+		/**
+		 * Handle the options page for global settings
+		 */
+		function options_page() {
+?>
+<div class="wrap"><div id="icon-tools" class="icon32"></div>
+	<h2><?php _e( 'Reveal.js Settings' ) ?></h2>
+	<form action="<?php echo admin_url( 'options.php' ) ?>" method="post">
+	<?php settings_fields( 'rjs-global-options' ) ?>
+	<?php do_settings_sections( 'rjs-global-options' ) ?>
+	<p><input type="submit" class="button button-primary" value="<?php _e( 'Save' ) ?>"/></p>
+	</form>
+</div>
+<?php
 		}
 		
 		/**
@@ -464,6 +493,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			</td>
 		</tr>
 <?php
+			$this->advanced_settings_fields( $vals );
 			$this->digital_signage_options( $vals );
 		}
 		
@@ -750,9 +780,41 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Perform any actions that need to happen on the admin_init hook
 		 */
 		function admin_init() {
+			register_setting( 'rjs-global-options', 'rjs_options', array( $this, 'sanitize_options' ) );
+			add_settings_section( 'rjs-global-options', __( 'Reveal JS Global Options' ), array( $this, 'settings_section' ), 'rjs-global-options' );
+			add_settings_field( 'rjs-menu-config', __( 'Add admin menu items for each presentation?' ), array( $this, '_settings_field_menu_config' ), 'rjs-global-options', 'rjs-global-options', array( 'label_for' => 'rjs-menu-config' ) );
+			
 			add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 			add_action( 'save_post', array( $this, 'save_meta_boxes' ), 10, 2 );
 			return;
+		}
+		
+		/**
+		 * Sanitize our global options
+		 */
+		function sanitize_options( $input ) {
+			$rt = array( 'menu-config' => false );
+			if ( isset( $input['menu-config'] ) && '1' == $input['menu-config'] )
+				$rt['menu-config'] = true;
+			
+			return $rt;
+		}
+		
+		/**
+		 * Output the settings section
+		 */
+		function settings_section() {
+			return;
+		}
+		
+		/**
+		 * Output the menu config settings field
+		 */
+		function _settings_field_menu_config( $args=array() ) {
+			$vals = get_option( 'rjs_options', array( 'menu-config' => false ) );
+			echo '<input type="checkbox" name="rjs_options[menu-config]" id="' . $args['label_for'] . '" value="1"';
+			checked( $vals['menu-config'] );
+			echo '/>';
 		}
 		
 		/**
