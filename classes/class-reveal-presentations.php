@@ -1,7 +1,7 @@
 <?php
 if ( ! class_exists( 'Reveal_Presentations' ) ) {
 	class Reveal_Presentations {
-		var $version = '0.3.1';
+		var $version = '1.0';
 		var $defaults = array(
 			'theme'       => 'default', 
 			'controls'    => true, 
@@ -584,6 +584,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Render the form fields for the experimental digital signage settings
 		 */
 		function digital_signage_options( $vals=array() ) {
+			return;
 ?>
 		<tr>
 			<th scope="col" colspan="2">
