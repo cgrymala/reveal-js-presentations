@@ -62,7 +62,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Register any necessary new image sizes
 		 */
 		function add_image_sizes() {
-			add_image_size( 'fb-og-image', 800, 800, true );
+			add_image_size( 'fb-og-image', 500, 500, true );
 			add_image_size( 'twitter-image', 560, 300, true );
 		}
 		
