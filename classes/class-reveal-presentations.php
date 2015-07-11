@@ -978,7 +978,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 */
 		function enqueue_scripts() {
 			wp_register_script( 'reveal-head', plugins_url( 'reveal-js/lib/js/head.min.js', dirname( __FILE__ ) ), array(), $this->version, true );
-			wp_register_script( 'reveal-js', plugins_url( 'reveal-js/js/reveal.min.js', dirname( __FILE__ ) ), array( 'reveal-head' ), $this->version, true );
+			wp_register_script( 'reveal-js', plugins_url( 'reveal-js/js/reveal.js', dirname( __FILE__ ) ), array( 'reveal-head' ), $this->version, true );
 			if ( is_tax( 'presentation' ) ) {
 				wp_enqueue_script( 'reveal-js' );
 				add_action( 'wp_print_footer_scripts', array( $this, 'print_footer_scripts' ), 99 );
@@ -1087,10 +1087,13 @@ if ( RJSSignageConfig.poll ) {
 			if ( ! is_tax( 'presentation' ) )
 				return;
 			
+			if ( 'default' == $options['theme'] )
+				$options['theme'] = 'league';
+			
 			$options = $this->get_presentation_settings();
 			wp_register_style( 'theme-base', get_stylesheet_uri(), array(), $this->version, 'all' );
 			wp_register_style( 'reveal-js-presentations', plugins_url( 'css/reveal-js-presentations.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
-			wp_register_style( 'reveal-js', plugins_url( 'reveal-js/css/reveal.min.css', dirname( __FILE__ ) ), array( 'reveal-js-presentations' ), $this->version, 'all' );
+			wp_register_style( 'reveal-js', plugins_url( 'reveal-js/css/reveal.css', dirname( __FILE__ ) ), array( 'reveal-js-presentations' ), $this->version, 'all' );
 			wp_register_style( 'reveal-theme', plugins_url( sprintf( 'reveal-js/css/theme/%s.css', $options['theme'] ), dirname( __FILE__ ) ), array( 'reveal-js' ), $this->version, 'all' );
 			wp_register_style( 'reveal-syntax', plugins_url( 'reveal-js/lib/css/zenburn.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
 			wp_enqueue_style( 'reveal-theme' );
