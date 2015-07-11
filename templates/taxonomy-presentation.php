@@ -17,6 +17,8 @@
 	<!--[if lt IE 9]>
 	<script src="<?php echo plugins_url( '/scripts/html5.js', dirname( __FILE__ ) ) ?>"></script>
 	<![endif]-->
+	<?php $reveal_presentations_obj->open_graph_tags() ?>
+	<?php $reveal_presentations_obj->twitter_card_tags() ?>
 	<?php wp_head(); ?>
 </head>
 

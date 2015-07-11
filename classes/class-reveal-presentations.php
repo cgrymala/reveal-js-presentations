@@ -471,6 +471,10 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			$f .= '</select>';
 			printf( $format, $l, $f );
 			
+			$l = sprintf( '<label for="%s">%s</label>', $this->presentation_meta_id( 'twitteruser', false ), __( 'Twitter Username for Author:' ) );
+			$f = sprintf( '<input type="text" name="%s" id="%s" value="%s">', $this->presentation_meta_name( 'twitteruser', false ), $this->presentation_meta_id( 'twitteruser', false ), $vals['twitteruser'] );
+			printf( $format, $l, $f );
+			
 			/**
 			 * Bail out at this point if we're creating a new presentation. 
 			 * 		No need to bombard with advanced settings on the screen where
@@ -675,6 +679,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				'backgroundTransition' => 'default', 
 				'parallaxBackgroundSize' => '', 
 				'customCSS' => null, 
+				'twitteruser' => '', 
 			);
 			
 			/**
@@ -784,6 +789,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			register_setting( 'rjs-global-options', 'rjs_options', array( $this, 'sanitize_options' ) );
 			add_settings_section( 'rjs-global-options', __( 'Reveal JS Global Options' ), array( $this, 'settings_section' ), 'rjs-global-options' );
 			add_settings_field( 'rjs-menu-config', __( 'Add admin menu items for each presentation?' ), array( $this, '_settings_field_menu_config' ), 'rjs-global-options', 'rjs-global-options', array( 'label_for' => 'rjs-menu-config' ) );
+			add_settings_field( 'rjs-twitter-user', __( 'Twitter Username for Site:' ), array( $this, '_settings_field_site_twitter_user' ), 'rjs-global-options', 'rjs-global-options', array( 'label_for' => 'rjs-twitter-user' ) );
 			
 			add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 			add_action( 'save_post', array( $this, 'save_meta_boxes' ), 10, 2 );
@@ -794,9 +800,11 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Sanitize our global options
 		 */
 		function sanitize_options( $input ) {
-			$rt = array( 'menu-config' => false );
+			$rt = array( 'menu-config' => false, 'twitter-user' => '' );
 			if ( isset( $input['menu-config'] ) && '1' == $input['menu-config'] )
 				$rt['menu-config'] = true;
+			if ( isset( $input['twitter-user'] ) )
+				$rt['twitter-user'] = esc_attr( $input['twitter-user'] );
 			
 			return $rt;
 		}
@@ -816,6 +824,14 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			echo '<input type="checkbox" name="rjs_options[menu-config]" id="' . $args['label_for'] . '" value="1"';
 			checked( $vals['menu-config'] );
 			echo '/>';
+		}
+		
+		/**
+		 * Output the Site Twitter Username field
+		 */
+		function _settings_field_site_twitter_user( $args=array() ) {
+			$vals = get_option( 'rjs_options', array( 'twitter-user' => '' ) );
+			echo '<input type="text" name="rjs_options[twitter-user]" id="' . $args['label_for'] . '" value="' . $vals['twitter-user'] . '"/>';
 		}
 		
 		/**
@@ -1145,6 +1161,122 @@ if ( RJSSignageConfig.poll ) {
 			}
 			
 			return $term;
+		}
+		
+		/**
+		 * Attempt to output the Facebook Open Graph tags
+		 */
+		function open_graph_tags() {
+			echo $this->get_open_graph_tags();
+		}
+		
+		function get_open_graph_tags() {
+			if ( ! is_tax( 'presentation' ) ) {
+				return;
+			}
+			
+			$ob = get_queried_object();
+
+			$top = get_posts( array( 
+				'post_type' => 'slides', 
+				'post_status' => 'publish', 
+				'orderby' => 'menu_order date', 
+				'order' => 'ASC', 
+				'posts_per_page' => 1, 
+				'numberposts' => 1, 
+				'post_parent' => 0, 
+				'tax_query' => array( array( 
+					'taxonomy' => 'presentation', 
+					'field' => 'slug', 
+					'terms' => $ob->slug
+				) ), 
+			) );
+			if ( is_array( $top ) )
+				$top = array_shift( $top );
+			if ( ! is_object( $top ) )
+				return;
+			
+			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'medium' );
+			
+			return apply_filters( 'reveal-js-open-graph-tags', sprintf( '
+<!-- Open Graph Tags -->
+<meta property="og:type" content="%1$s" />
+<meta property="og:title" content="%2$s" />
+<meta property="og:description" content="%3$s" />
+<meta property="og:url" content="%4$s" />
+<meta property="og:site_name" content="%5$s" />
+<meta property="og:image" content="%6$s" />
+<meta property="og:locale" content="%7$s" />
+<!-- / Open Graph Tags -->', 
+				/*1*/'website', 
+				/*2*/esc_attr( $ob->name ), 
+				/*3*/esc_attr( $ob->description ), 
+				/*4*/esc_url( get_term_link( $ob->term_id, $ob->taxonomy ) ), 
+				/*5*/esc_attr( get_bloginfo( 'name' ) ), 
+				/*6*/esc_url( $thumb ), 
+				/*7*/get_locale() 
+			), $ob );
+		}
+		
+		/**
+		 * Attempt to output the Twitter Card tags
+		 */
+		function twitter_card_tags() {
+			echo $this->get_twitter_card_tags();
+		}
+		
+		function get_twitter_card_tags() {
+			if ( ! is_tax( 'presentation' ) ) {
+				return;
+			}
+			
+			$ob = get_queried_object();
+
+			$top = get_posts( array( 
+				'post_type' => 'slides', 
+				'post_status' => 'publish', 
+				'orderby' => 'menu_order date', 
+				'order' => 'ASC', 
+				'posts_per_page' => 1, 
+				'numberposts' => 1, 
+				'post_parent' => 0, 
+				'tax_query' => array( array( 
+					'taxonomy' => 'presentation', 
+					'field' => 'slug', 
+					'terms' => $ob->slug
+				) ), 
+			) );
+			if ( is_array( $top ) )
+				$top = array_shift( $top );
+			if ( ! is_object( $top ) )
+				return;
+			
+			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'medium' );
+			$twitteruser = get_option( 'rjs_options', array( 'twitter-user' => '' ) );
+			if ( empty( $twitteruser ) && ! empty( $ob->twitteruser ) )
+				$twitteruser = $ob->twitteruser;
+			if ( empty( $ob->twitteruser ) && ! empty( $twitteruser ) )
+				$ob->twitteruser = $twitteruser;
+			
+			if ( empty( $twitteruser ) )
+				return;
+			
+			return apply_filters( 'reveal-js-twitter-card-tags', sprintf( '
+<!-- Twitter Card Tags -->
+<meta name="twitter:card" content="%6$s">
+<meta name="twitter:site" content="@%1$s">
+<meta name="twitter:creator" content="@%2$s">
+<meta name="twitter:title" content="%3$s">
+<meta name="twitter:description" content="%4$s">
+<meta name="twitter:image" content="%5$s">
+<!-- / Twitter Card Tags -->', 
+				/*1*/esc_attr( $twitteruser ), 
+				/*2*/esc_attr( $ob->twitteruser ), 
+				/*3*/esc_attr( $ob->name ), 
+				/*4*/esc_attr( $ob->description ), 
+				/*5*/esc_url( $thumb ), 
+				/*6*/'summary_large_image'
+			), $ob );
 		}
 		
 		/**
