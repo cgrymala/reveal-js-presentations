@@ -1,18 +1,18 @@
 # Reveal JS Presentations #
 **Contributors:** cgrymala
-  
+
 **Tags:** reveal.js, presentation, digital signage, slides
-  
+
 **Requires at least:** 4.0
-  
+
 **Tested up to:** 4.0
-  
-**Stable tag:** 1.0
-  
+
+**Stable tag:** 1.1
+
 **License:** GPLv2 or later
-  
+
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html
-  
+
 
 Allows simple creation of Reveal.js presentations in WordPress
 
@@ -117,3 +117,14 @@ Those are known in reveal.js as "fragments". To use them, you will first need to
 	<li class="fragment roll-in">Enjoy your presentation</li>
 </ul>
 `
+
+## Changelog ##
+
+### 1.1 ###
+
+* Begin implementing Facebook Open Graph tags
+* Begin implementing Twitter Card tags
+
+### 1.0 ###
+
+* Begin implementing various digital signage options
