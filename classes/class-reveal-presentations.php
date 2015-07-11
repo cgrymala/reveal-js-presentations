@@ -1087,10 +1087,10 @@ if ( RJSSignageConfig.poll ) {
 			if ( ! is_tax( 'presentation' ) )
 				return;
 			
+			$options = $this->get_presentation_settings();
 			if ( 'default' == $options['theme'] )
 				$options['theme'] = 'league';
 			
-			$options = $this->get_presentation_settings();
 			wp_register_style( 'theme-base', get_stylesheet_uri(), array(), $this->version, 'all' );
 			wp_register_style( 'reveal-js-presentations', plugins_url( 'css/reveal-js-presentations.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
 			wp_register_style( 'reveal-js', plugins_url( 'reveal-js/css/reveal.css', dirname( __FILE__ ) ), array( 'reveal-js-presentations' ), $this->version, 'all' );
