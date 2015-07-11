@@ -1208,7 +1208,7 @@ if ( RJSSignageConfig.poll ) {
 			if ( ! is_object( $top ) )
 				return;
 			
-			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'large' );
+			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'fb-og-image' );
 			$this->slideshow_thumbnail = $thumb;
 			
 			return apply_filters( 'reveal-js-open-graph-tags', sprintf( '
@@ -1264,7 +1264,9 @@ if ( RJSSignageConfig.poll ) {
 			if ( ! is_object( $top ) )
 				return;
 			
-			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'large' );
+			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'twitter-image' );
+			$this->slideshow_thumbnail = $thumb;
+			
 			$opts = get_option( 'rjs_options', array( 'twitter-user' => '' ) );
 			$twitteruser = $opts['twitter-user'];
 			if ( empty( $twitteruser ) && ! empty( $ob->twitteruser ) )
