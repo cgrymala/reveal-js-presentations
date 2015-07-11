@@ -55,6 +55,15 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			add_action( 'manage_slides_posts_custom_column', array( $this, 'manage_slides_custom_column' ), 5, 2 );
 			add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
 			add_filter( 'rjs-custom-css', array( $this, 'parse_css' ), 99 );
+			add_action( 'after_setup_theme', array( $this, 'add_image_sizes' ) );
+		}
+		
+		/**
+		 * Register any necessary new image sizes
+		 */
+		function add_image_sizes() {
+			add_image_size( 'fb-og-image', 800, 800, true );
+			add_image_size( 'twitter-image', 560, 300, true );
 		}
 		
 		/**
