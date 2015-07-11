@@ -1256,7 +1256,8 @@ if ( RJSSignageConfig.poll ) {
 				return;
 			
 			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'large' );
-			$twitteruser = get_option( 'rjs_options', array( 'twitter-user' => '' ) );
+			$opts = get_option( 'rjs_options', array( 'twitter-user' => '' ) );
+			$twitteruser = $opts['twitter-user'];
 			if ( empty( $twitteruser ) && ! empty( $ob->twitteruser ) )
 				$twitteruser = $ob->twitteruser;
 			if ( empty( $ob->twitteruser ) && ! empty( $twitteruser ) )
