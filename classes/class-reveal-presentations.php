@@ -1200,6 +1200,7 @@ if ( RJSSignageConfig.poll ) {
 				return;
 			
 			list( $thumb ) = wp_get_attachment_image_src( get_post_thumbnail_id( $top->ID ), 'medium' );
+			$this->slideshow_thumbnail = $thumb;
 			
 			return apply_filters( 'reveal-js-open-graph-tags', sprintf( '
 <!-- Open Graph Tags -->

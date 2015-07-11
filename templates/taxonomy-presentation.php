@@ -23,6 +23,11 @@
 </head>
 
 <body <?php body_class(); ?>>
+<?php
+if ( isset( $reveal_presentations_obj->slideshow_thumbnail ) && esc_url( $reveal_presentations_obj->slideshow_thumbnail ) ) {
+	printf( '<img src="%s" alt="" style="display: block; width: 1px; height: 1px; overflow: hidden; margin: 0; padding: 0; position: absolute; top: 0; left: 0;"/>', esc_url( $reveal_presentations_obj->slideshow_thumbnail ) );
+}
+?>
 	<?php $reveal_presentations_obj->do_presentation_body(); ?>
 	<?php wp_footer(); ?>
 </body>
