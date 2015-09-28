@@ -1545,5 +1545,5 @@ if ( RJSSignageConfig.poll ) {
 		global $reveal_presentations_obj;
 		$reveal_presentations_obj = new Reveal_Presentations;
 	}
-	inst_reveal_presentations_obj();
+	add_action( 'plugins_loaded', 'inst_reveal_presentations_obj' );
 }
