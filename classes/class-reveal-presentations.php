@@ -1,7 +1,7 @@
 <?php
 if ( ! class_exists( 'Reveal_Presentations' ) ) {
 	class Reveal_Presentations {
-		var $version = '1.0';
+		var $version = '1.2';
 		var $defaults = array(
 			'theme'       => 'default', 
 			'controls'    => true, 
@@ -526,6 +526,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			</th>
 			<td>
 				<textarea class="widefat largetext" cols="25" rows="10" name="<?php $this->presentation_meta_name( 'customCSS' ) ?>" id="<?php $this->presentation_meta_id( 'customCSS' ) ?>"><?php echo stripslashes( $vals['customCSS'] ) ?></textarea>
+				<p><em><?php _e( 'The CSS will be processed as SASS (SCSS Syntax) and output in the head' ) ?></em></p>
 			</td>
 		</tr>
 <?php
@@ -917,7 +918,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 </div>
 <p><label for="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php _e( 'Custom CSS for this slide:' ) ?></label><br/> 
 	<textarea cols="25" rows="8" class="widefat" name="<?php echo $this->_slide_settings_name( 'custom-css' ) ?>" id="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php echo stripslashes( $slide_settings['custom-css'] ) ?></textarea> <br/>
-	<em><?php printf( __( 'Hint: The HTML ID of this slide is <strong>%s</strong>' ), 'rjs-slide-' . $post_id ) ?></em></p>
+	<em><?php printf( __( 'The CSS will be processed as SASS (SCSS Syntax) and output in the head; imagine this box is surrounded by <strong>#%s {}</strong>' ), 'rjs-slide-' . $post_id ) ?></em></p>
 <?php
 			return;
 		}

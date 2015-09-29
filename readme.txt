@@ -2,8 +2,8 @@
 Contributors: cgrymala
 Tags: reveal.js, presentation, digital signage, slides
 Requires at least: 4.0
-Tested up to: 4.0
-Stable tag: 1.1
+Tested up to: 4.3.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ Options marked with an asterisk (*) can be overridden on individual slides. Opti
 1. Transition+* - which transition you want to use in between slides
 1. Transition speed+* - how quickly/slowly you want one slide to transition to the next
 1. Parallax background image - if you'd like to set up a background image that runs throughout the entire presentation, choose that image here.
-1. Custom CSS for this presentation - any CSS that you want applied to the entire presentation (each slide can have its own individual CSS, as well)
+1. Custom CSS for this presentation - any CSS that you want applied to the entire presentation (each slide can have its own individual CSS, as well). This CSS will be processed as SASS (SCSS Syntax) and output in the head of the presentation.
 1. Display slide controls - whether or not to show the arrows, etc. that allow you to manually control the presentation
 1. Display presentation progress bar - whether or not to display a visual indicator showing how far along you are in the presentation
 1. Display the page number of the current slide - whether or not to display a numerical representation of which slide you're currently viewing
@@ -74,7 +74,7 @@ There are a number of options available within each individual slide, as well. H
 1. Use the featured image as the background for this slide? - if you set a featured image for the slide, you can use that featured image as the background image for the entire slide. If you'd prefer to insert an image into the content of the slide (to be contained entirely within the slide), do so using the traditional "Insert Media" method, and leave this option unchecked.
 1. Use a custom background color for this slide? - if you want this slide to use a different background color than the rest of the presentation, you can choose that here.
 1. Use custom transition settings for this slide? - if you want to use a transition other than the one used for the overall presentation, you can enable this option.
-1. Custom CSS for this slide - any CSS entered into this box will be automatically prefixed with the slide's HTML ID, so that it only applies to this individual slide. The CSS in this box is run through a SCSS processor and minified before it's put on the screen, so you can use SCSS syntax within this box.
+1. Custom CSS for this slide - any CSS entered into this box will be automatically prefixed with the slide's HTML ID, so that it only applies to this individual slide. The CSS in this box is run through a SCSS processor and minified before it's put on the screen, so you can use SCSS syntax within this box. The CSS is also wrapped in the ID of the slide prior to being processed, so any CSS in the box will apply specifically to that slide (because it's processed as SASS, you can simply start entering style definitions directly in the box without any selectors if you want to target the slide content area itself).
 
 == Other Notes ==
 
