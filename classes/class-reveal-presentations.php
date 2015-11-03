@@ -1,7 +1,7 @@
 <?php
 if ( ! class_exists( 'Reveal_Presentations' ) ) {
 	class Reveal_Presentations {
-		var $version = '1.2';
+		var $version = '1.2.1';
 		var $defaults = array(
 			'theme'       => 'default', 
 			'controls'    => true, 
@@ -1304,34 +1304,38 @@ if ( RJSSignageConfig.poll ) {
 			add_action( 'rjs-after-presentation', 'wp_reset_query' );
 			
 			$term = $this->get_presentation_meta();
-			$top = get_posts( array( 
-				'post_type' => 'slides', 
-				'post_status' => 'publish', 
-				'orderby' => 'menu_order date', 
-				'order' => 'ASC', 
-				'posts_per_page' => 1, 
-				'numberposts' => 1, 
-				'post_parent' => 0, 
-				'tax_query' => array( array( 
-					'taxonomy' => 'presentation', 
-					'field' => 'slug', 
-					'terms' => $term->slug
-				) ), 
-			) );
-			if ( is_array( $top ) )
-				$top = array_shift( $top );
-			if ( ! is_object( $top ) )
-				return;
 			
-			$q = new WP_Query( array( 
+			$args = array(
 				'post_type' => 'slides', 
 				'post_status' => 'publish', 
 				'orderby' => 'menu_order date', 
 				'order' => 'ASC', 
 				'posts_per_page' => -1, 
 				'numberposts' => -1, 
-				'post_parent' => $top->ID, 
-			) );
+				'post_parent' => 0, 
+				'tax_query' => array( array( 
+					'taxonomy' => 'presentation', 
+					'field' => 'slug', 
+					'terms' => $term->slug
+				) ), 
+			);
+			
+			$q = new WP_Query( $args );
+			if ( is_wp_error( $q ) || ! $q->have_posts() )
+				return;
+			
+			global $post;
+			if ( 1 == $q->found_posts ) {
+				while ( $q->have_posts() ) : $q->the_post();
+				$tmpID = $post->ID;
+				endwhile;
+				
+				$args['post_parent'] = $post->ID;
+				$args['posts_per_page'] = -1;
+				$args['numberposts'] = -1;
+				unset( $args['tax_query'] );
+				$q = new WP_Query( $args );
+			}
 			
 			do_action( 'rjs-before-presentation' );
 			
@@ -1358,7 +1362,7 @@ if ( RJSSignageConfig.poll ) {
 ?>
 	</div>
 </div>
-<style type="text/css">
+<style type="text/css" title="reveal-js-presentations-custom-css">
 <?php echo $this->customcss ?>
 </style>
 <?php
