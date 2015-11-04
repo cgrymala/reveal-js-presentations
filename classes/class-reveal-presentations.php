@@ -140,8 +140,10 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				case 'presentation' : 
 					$termlist = array();
 					$terms = get_the_terms( $id, 'presentation' );
-					foreach ( $terms as $term ) {
-						$termlist[] = sprintf( '<a href="%1$s">%2$s</a>', admin_url( '/edit.php?presentation=' . $term->slug . '&post_type=' . get_post_type( $id ) ), $term->name );
+					if ( false !== $terms ) {
+						foreach ( $terms as $term ) {
+							$termlist[] = sprintf( '<a href="%1$s">%2$s</a>', admin_url( '/edit.php?presentation=' . $term->slug . '&post_type=' . get_post_type( $id ) ), $term->name );
+						}
 					}
 					echo implode( ' | ', $termlist );
 				break;
