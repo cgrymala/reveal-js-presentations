@@ -481,7 +481,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			printf( $format, $l, $f );
 			
 			$l = sprintf( '<label for="%s">%s</label>', $this->presentation_meta_id( 'twitteruser', false ), __( 'Twitter Username for Author:' ) );
-			$f = sprintf( '<input type="text" name="%s" id="%s" value="%s">', $this->presentation_meta_name( 'twitteruser', false ), $this->presentation_meta_id( 'twitteruser', false ), $vals['twitteruser'] );
+			$f = sprintf( '<input type="text" name="%s" id="%s" value="%s">', $this->presentation_meta_name( 'twitteruser', false ), $this->presentation_meta_id( 'twitteruser', false ), ! empty( $vals['twitteruser'] ) ? $vals['twitteruser'] : '' );
 			printf( $format, $l, $f );
 			
 			/**
