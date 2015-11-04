@@ -44,7 +44,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			add_action( 'init', array( $this, 'register_post_types' ) );
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ), 99 );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 			add_filter( 'template_include', array( $this, 'template_include' ), 99 );
 			add_action( 'template_redirect', array( $this, 'template_redirect' ), 1 );
@@ -1096,7 +1096,23 @@ if ( RJSSignageConfig.poll ) {
 		function enqueue_styles() {
 			if ( ! is_tax( 'presentation' ) )
 				return;
-			
+
+			// Find theme's stylesheet
+			$styles = wp_styles();
+
+			$theme_handle = '';
+			foreach ( $styles->registered as $queue => $arg ) {
+				if ( false !== strpos( $arg->src, get_stylesheet_uri() ) ) {
+					$theme_handle = $arg->handle;
+					break;
+				}
+			}
+
+			// Found the theme's stylesheet; let's remove it!
+			if ( ! empty( $theme_handle ) ) {
+				wp_deregister_style( $theme_handle );
+			}
+
 			$options = $this->get_presentation_settings();
 			if ( 'default' == $options['theme'] )
 				$options['theme'] = 'league';
