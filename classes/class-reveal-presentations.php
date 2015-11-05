@@ -1101,16 +1101,33 @@ if ( RJSSignageConfig.poll ) {
 			$styles = wp_styles();
 
 			$theme_handle = '';
+			$parent_theme_handle = '';
 			foreach ( $styles->registered as $queue => $arg ) {
+				// Main theme
 				if ( false !== strpos( $arg->src, get_stylesheet_uri() ) ) {
 					$theme_handle = $arg->handle;
-					break;
+
+					if ( ! is_child_theme() ) {
+						break;
+					}
+				}
+
+				// Parent theme
+				if ( is_child_theme() && false !== ( strpos( $arg->src, get_template_directory_uri() . '/style.css' ) ) ) {
+					$parent_theme_handle = $arg->handle;
+
+					if ( ! empty( $theme_handle ) ) {
+						break;
+					}
 				}
 			}
 
 			// Found the theme's stylesheet; let's remove it!
 			if ( ! empty( $theme_handle ) ) {
 				wp_deregister_style( $theme_handle );
+			}
+			if ( ! empty( $parent_theme_handle ) ) {
+				wp_deregister_style( $parent_theme_handle );
 			}
 
 			$options = $this->get_presentation_settings();
