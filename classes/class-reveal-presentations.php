@@ -40,7 +40,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Create our Reveal_Presentations object
 		 */
 		function __construct() {
-			add_action( 'init', array( $this, 'init' ) );
+			add_action( 'wp', array( $this, 'wp' ) );
 			add_action( 'init', array( $this, 'register_post_types' ) );
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -337,10 +337,21 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		}
 		
 		/**
-		 * Perform any actions that need to happen on the init hook
+		 * Perform any actions that need to happen on the 'wp' hook
 		 */
-		function init() {
-			return;
+		function wp() {
+			if ( 'presentation' !== get_query_var( 'taxonomy' ) && false === is_archive() ) {
+				return;
+			}
+
+			$term     = get_term_by( 'slug', get_query_var( 'term' ), 'presentation' );
+			$settings = $this->get_presentation_settings( $term );
+
+			// Hide admin bar on mobile devices
+			if ( $settings['hideAddressBar'] && wp_is_mobile() ) {
+				add_filter( 'show_admin_bar', '__return_false' );
+				add_filter( 'wp_admin_bar_class', '__return_false' );
+			}
 		}
 		
 		/**
