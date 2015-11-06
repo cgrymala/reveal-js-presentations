@@ -140,8 +140,10 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 				case 'presentation' : 
 					$termlist = array();
 					$terms = get_the_terms( $id, 'presentation' );
-					foreach ( $terms as $term ) {
-						$termlist[] = sprintf( '<a href="%1$s">%2$s</a>', admin_url( '/edit.php?presentation=' . $term->slug . '&post_type=' . get_post_type( $id ) ), $term->name );
+					if ( false !== $terms ) {
+						foreach ( $terms as $term ) {
+							$termlist[] = sprintf( '<a href="%1$s">%2$s</a>', admin_url( '/edit.php?presentation=' . $term->slug . '&post_type=' . get_post_type( $id ) ), $term->name );
+						}
 					}
 					echo implode( ' | ', $termlist );
 				break;
@@ -481,7 +483,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			printf( $format, $l, $f );
 			
 			$l = sprintf( '<label for="%s">%s</label>', $this->presentation_meta_id( 'twitteruser', false ), __( 'Twitter Username for Author:' ) );
-			$f = sprintf( '<input type="text" name="%s" id="%s" value="%s">', $this->presentation_meta_name( 'twitteruser', false ), $this->presentation_meta_id( 'twitteruser', false ), $vals['twitteruser'] );
+			$f = sprintf( '<input type="text" name="%s" id="%s" value="%s">', $this->presentation_meta_name( 'twitteruser', false ), $this->presentation_meta_id( 'twitteruser', false ), ! empty( $vals['twitteruser'] ) ? $vals['twitteruser'] : '' );
 			printf( $format, $l, $f );
 			
 			/**
@@ -878,7 +880,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 ?>
 <div>
 <p><?php _e( 'Speaker Notes' ) ?></p>
-<?php wp_editor( $slide_settings['notes'], $this->_slide_settings_id( 'notes' ), array( 'media_buttons' => false, 'textarea_name' => $this->_slide_settings_name( 'notes' ), 'teeny' => true ) ) ?>
+<?php wp_editor( ! empty( $slide_settings['notes'] ) ? $slide_settings['notes'] : '', $this->_slide_settings_id( 'notes' ), array( 'media_buttons' => false, 'textarea_name' => $this->_slide_settings_name( 'notes' ), 'teeny' => true ) ) ?>
 </div>
 <p><input type="checkbox" name="<?php echo $this->_slide_settings_name( 'use-title' ) ?>" id="<?php echo $this->_slide_settings_id( 'use-title' ) ?>" value="1" class="checkbox"<?php checked( $slide_settings['use-title'] ) ?>/> 
 	<label for="<?php echo $this->_slide_settings_id( 'use-title' ) ?>"><?php _e( 'Use the Slide Title on the slide?' ) ?></label></p>
@@ -917,7 +919,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		</select></p>
 </div>
 <p><label for="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php _e( 'Custom CSS for this slide:' ) ?></label><br/> 
-	<textarea cols="25" rows="8" class="widefat" name="<?php echo $this->_slide_settings_name( 'custom-css' ) ?>" id="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php echo stripslashes( $slide_settings['custom-css'] ) ?></textarea> <br/>
+	<textarea cols="25" rows="8" class="widefat" name="<?php echo $this->_slide_settings_name( 'custom-css' ) ?>" id="<?php echo $this->_slide_settings_id( 'custom-css' ) ?>"><?php echo stripslashes( ! empty( $slide_settings['custom-css'] ) ? $slide_settings['custom-css'] : '' ) ?></textarea> <br/>
 	<em><?php printf( __( 'The CSS will be processed as SASS (SCSS Syntax) and output in the head; imagine this box is surrounded by <strong>#%s {}</strong>' ), 'rjs-slide-' . $post_id ) ?></em></p>
 <?php
 			return;
@@ -927,13 +929,15 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Save the slide settings
 		 */
 		function save_meta_boxes( $post_id=null ) {
+			$nonce = ! empty( $_REQUEST['_rjs_slide_settings_nonce'] ) ? $_REQUEST['_rjs_slide_settings_nonce'] : '';
+
 			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
 				return;
 			if ( ! current_user_can( 'edit_post', $post_id ) )
 				return/* wp_die( 'The user cannot edit this post' )*/;
 			if ( ! isset( $_REQUEST['post_type'] ) || 'slides' != $_REQUEST['post_type'] )
 				return;
-			if ( ! wp_verify_nonce( $_REQUEST['_rjs_slide_settings_nonce'], 'rjs-slide-settings' ) )
+			if ( ! wp_verify_nonce( $nonce, 'rjs-slide-settings' ) )
 				return;
 			if ( isset( $_REQUEST['post_ID'] ) && is_numeric( $_REQUEST['post_ID'] ) )
 				$post_id = $_REQUEST['post_ID'];
