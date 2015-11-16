@@ -975,7 +975,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 */
 		function _slide_defaults() {
 			return apply_filters( 'reveal-js-slide-defaults', array( 
-				'use-title' => true, 
+				'use-title' => false, 
 				'use-image' => false, 
 				'background' => null, 
 				'transition' => null, 
