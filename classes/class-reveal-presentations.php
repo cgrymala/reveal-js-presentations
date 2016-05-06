@@ -32,7 +32,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			'poll'         => false, 
 			'pollInterval' => 0, 
 		);
-		var $themes = array( 'default', 'beige', 'sky', 'night', 'serif', 'simple', 'solarized', 'none' );
+		var $themes = array( 'default', 'beige', 'sky', 'night', 'serif', 'simple', 'solarized', 'black', 'blood', 'league', 'moon', 'white', 'none' );
 		var $transitions = array( 'default', 'cube', 'page', 'concave', 'zoom', 'linear', 'fade', 'none' );
 		var $customcss = '';
 		
