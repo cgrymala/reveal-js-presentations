@@ -1491,9 +1491,14 @@ if ( RJSSignageConfig.poll ) {
 			if ( empty( $css ) )
 				return null;
 				
-			if ( ! class_exists( 'Jetpack_Custom_CSS' ) ) {
+			if ( ! defined( 'JETPACK__VERSION' ) ) {
 				return $this->inst_css_parser( $css );
 			} else {
+				if ( ! class_exists( 'Jetpack_Custom_CSS', false ) && function_exists( 'jetpack_load_custom_css' ) ) {
+					jetpack_load_custom_css();
+				} else {
+					require JETPACK__PLUGIN_DIR . 'modules/custom-css/custom-css.php';
+				}
 				return Jetpack_Custom_CSS::minify( $css, 'sass' );
 			}
 		}
