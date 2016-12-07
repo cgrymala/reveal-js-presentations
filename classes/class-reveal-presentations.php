@@ -1530,7 +1530,10 @@ if ( RJSSignageConfig.poll ) {
 				if ( ! class_exists( 'Jetpack_Custom_CSS', false ) ) {
 					if ( function_exists( 'jetpack_load_custom_css' ) ) {
 						jetpack_load_custom_css();
-					} else {
+					}
+
+					// Still here? Load module manually.
+					if ( ! class_exists( 'Jetpack_Custom_CSS', false ) ) {
 						require JETPACK__PLUGIN_DIR . 'modules/custom-css/custom-css.php';
 					}
 				}
