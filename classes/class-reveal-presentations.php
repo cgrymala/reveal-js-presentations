@@ -44,7 +44,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			add_action( 'init', array( $this, 'register_post_types' ) );
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ), 99 );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 			add_filter( 'template_include', array( $this, 'template_include' ), 99 );
 			add_action( 'template_redirect', array( $this, 'template_redirect' ), 1 );
