@@ -3,11 +3,11 @@
 
 **Tags:** reveal.js, presentation, digital signage, slides
 
-**Requires at least:** 4.0
+**Requires at least:** 4.6
 
-**Tested up to:** 4.3.1
+**Tested up to:** 4.7
 
-**Stable tag:** 1.2
+**Stable tag:** 1.3
 
 **License:** GPLv2 or later
 
@@ -119,6 +119,11 @@ Those are known in reveal.js as "fragments". To use them, you will first need to
 `
 
 ## Changelog ##
+
+### 1.3 ###
+
+* Fixes "Hide Admin Bar on Mobile" functionality, h/t [r-a-y](https://github.com/r-a-y)
+* Fixes incompatibility with new version of JetPack, h/t [r-a-y](https://github.com/r-a-y)
 
 ### 1.1 ###
 

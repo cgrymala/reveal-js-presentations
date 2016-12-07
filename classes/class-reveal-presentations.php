@@ -1,7 +1,18 @@
 <?php
+/**
+ * Implements the Reveal_Presentations class
+ * This class implements the majority of the functionality of 
+ * 		this plugin.
+ * @version  1.3
+ * @package  reveal-js-presentations
+ * @todo     Split this class up into multiple classes to improve 
+ * 			efficiency
+ * @todo     Improve structure of class(es)
+ * @todo     Instantiate i18n/l10n so plugin can be translated properly
+ */
 if ( ! class_exists( 'Reveal_Presentations' ) ) {
 	class Reveal_Presentations {
-		var $version = '1.2.1';
+		var $version = '1.3';
 		var $defaults = array(
 			'theme'       => 'default', 
 			'controls'    => true, 
