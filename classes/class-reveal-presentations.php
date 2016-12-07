@@ -32,7 +32,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			'poll'         => false, 
 			'pollInterval' => 0, 
 		);
-		var $themes = array( 'default', 'beige', 'sky', 'night', 'serif', 'simple', 'solarized', 'none' );
+		var $themes = array( 'default', 'beige', 'sky', 'night', 'serif', 'simple', 'solarized', 'black', 'blood', 'league', 'moon', 'white', 'none' );
 		var $transitions = array( 'default', 'cube', 'page', 'concave', 'zoom', 'linear', 'fade', 'none' );
 		var $customcss = '';
 		
@@ -1528,10 +1528,26 @@ if ( RJSSignageConfig.poll ) {
 			if ( empty( $css ) )
 				return null;
 				
-			if ( ! class_exists( 'Jetpack_Custom_CSS' ) ) {
+			if ( ! defined( 'JETPACK__VERSION' ) ) {
 				return $this->inst_css_parser( $css );
 			} else {
-				return Jetpack_Custom_CSS::minify( $css, 'sass' );
+				if ( ! class_exists( 'Jetpack_Custom_CSS', false ) ) {
+					if ( function_exists( 'jetpack_load_custom_css' ) ) {
+						jetpack_load_custom_css();
+					}
+
+					// Still here? Load module manually.
+					if ( ! class_exists( 'Jetpack_Custom_CSS', false ) ) {
+						require JETPACK__PLUGIN_DIR . 'modules/custom-css/custom-css.php';
+					}
+				}
+
+				$css = @Jetpack_Custom_CSS::minify( $css, 'sass' );
+				if ( empty( $css ) ) {
+					return null;
+				}
+
+				return $css;
 			}
 		}
 		
