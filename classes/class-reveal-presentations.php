@@ -1504,7 +1504,13 @@ if ( RJSSignageConfig.poll ) {
 						require JETPACK__PLUGIN_DIR . 'modules/custom-css/custom-css.php';
 					}
 				}
-				return Jetpack_Custom_CSS::minify( $css, 'sass' );
+
+				$css = @Jetpack_Custom_CSS::minify( $css, 'sass' );
+				if ( empty( $css ) ) {
+					return null;
+				}
+
+				return $css;
 			}
 		}
 		
