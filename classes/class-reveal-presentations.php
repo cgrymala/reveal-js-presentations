@@ -1549,75 +1549,24 @@ if ( RJSSignageConfig.poll ) {
 		function parse_css( $css=null ) {
 			if ( empty( $css ) )
 				return null;
-				
-			if ( ! defined( 'JETPACK__VERSION' ) ) {
-				return $this->inst_css_parser( $css );
-			} else {
+
+			if ( ! class_exists( 'Jetpack_Custom_CSS', false ) ) {
+				if ( function_exists( 'jetpack_load_custom_css' ) ) {
+					jetpack_load_custom_css();
+				}
+
+				// Still here? Load module manually.
 				if ( ! class_exists( 'Jetpack_Custom_CSS', false ) ) {
-					if ( function_exists( 'jetpack_load_custom_css' ) ) {
-						jetpack_load_custom_css();
-					}
-
-					// Still here? Load module manually.
-					if ( ! class_exists( 'Jetpack_Custom_CSS', false ) ) {
-						require JETPACK__PLUGIN_DIR . 'modules/custom-css/custom-css.php';
-					}
+					require JETPACK__PLUGIN_DIR . 'modules/custom-css/custom-css.php';
 				}
-
-				$css = @Jetpack_Custom_CSS::minify( $css, 'sass' );
-				if ( empty( $css ) ) {
-					return null;
-				}
-
-				return $css;
 			}
-		}
-		
-		/**
-		 * If we're not running JetPack, instantiate a custom CSS parser
-		 */
-		function inst_css_parser( $css=null ) {
-			if ( empty( $css ) )
-				return '';
-				
-			$css = $this->compile_scss( $css );
-			
-			if ( ! class_exists( 'safecss_class' ) )
-				require_once( plugin_dir_path( dirname( __FILE__ ) ) . '/classes/class-safecss-class.php' );
-			
-			safecss_class();
-			$csstidy = new csstidy();
-			$csstidy->optimise = new safecss( $csstidy );
-	
-			$csstidy->set_cfg( 'remove_bslash',              false );
-			$csstidy->set_cfg( 'compress_colors',            true );
-			$csstidy->set_cfg( 'compress_font-weight',       true );
-			$csstidy->set_cfg( 'remove_last_;',              true );
-			$csstidy->set_cfg( 'case_properties',            true );
-			$csstidy->set_cfg( 'discard_invalid_properties', true );
-			$csstidy->set_cfg( 'css_level',                  'CSS3.0' );
-			$csstidy->set_cfg( 'template', 'highest');
-			$csstidy->set_cfg( 'preserve_css',                false );
-			$csstidy->parse( $css );
-	
-			return $csstidy->print->plain();
-		}
-		
-		/**
-		 * Compile SCSS code
-		 * Only if JetPack is not available
-		 */
-		function compile_scss( $sass=null ) {
-			if ( empty( $sass ) )
+
+			$css = @Jetpack_Custom_CSS::minify( $css, 'sass' );
+			if ( empty( $css ) ) {
 				return null;
-				
-			require_once( dirname( __FILE__ ) . '/inc/preprocessors/scss.inc.php' );
-			$compiler = new scssc();
-			try {
-				return $compiler->compile( $sass );
-			} catch ( Exception $e ) {
-				return $sass;
 			}
+
+			return $css;
 		}
 	}
 	
