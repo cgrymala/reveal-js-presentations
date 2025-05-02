@@ -12,7 +12,7 @@
  */
 if ( ! class_exists( 'Reveal_Presentations' ) ) {
 	class Reveal_Presentations {
-		var $version = '1.3';
+		var $version = '1.4';
 		var $defaults = array(
 			'theme'       => 'default', 
 			'controls'    => true, 
@@ -193,6 +193,11 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Make sure the print stylesheet is enqueued properly
 		 */
 		function enqueue_print_with_notes_css() {
+            /**
+             * This needs to be updated, since the print styles no longer appear to be in separate CSS files
+             */
+            return;
+
 			wp_register_style( 'pdf-print', plugins_url( '/reveal-js/css/print/pdf.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
 			wp_enqueue_style( 'print-with-notes', plugins_url( '/css/print-with-notes.css', dirname( __FILE__ ) ), array( 'pdf-print' ), $this->version, 'all' );
 		}
@@ -1013,8 +1018,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 		 * Set up any javascript we need
 		 */
 		function enqueue_scripts() {
-			wp_register_script( 'reveal-head', plugins_url( 'reveal-js/lib/js/head.min.js', dirname( __FILE__ ) ), array(), $this->version, true );
-			wp_register_script( 'reveal-js', plugins_url( 'reveal-js/js/reveal.js', dirname( __FILE__ ) ), array( 'reveal-head' ), $this->version, true );
+			wp_register_script( 'reveal-js', plugins_url( 'reveal-js/dist/reveal.js', dirname( __FILE__ ) ), array(), $this->version, true );
 			if ( is_tax( 'presentation' ) ) {
 				wp_enqueue_script( 'reveal-js' );
 				add_action( 'wp_print_footer_scripts', array( $this, 'print_footer_scripts' ), 99 );
@@ -1039,15 +1043,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 			do_action( 'rjs-before-footer-scripts' );
 			
 			$dependencies = apply_filters( 'rjs-dependencies', array(
-				array( 
-					'src' => plugins_url( 'reveal-js/lib/js/classList.js', dirname( __FILE__ ) ), 
-					'condition' => 'function() { return !document.body.classList; }'
-				), 
-				array( 
-					'src' => plugins_url( 'reveal-js/plugin/markdown/marked.js', dirname( __FILE__ ) ), 
-					'condition' => 'function() { return !!document.querySelector( \'[data-markdown]\' ); }'
-				), 
-				array( 
+				array(
 					'src' => plugins_url( 'reveal-js/plugin/markdown/markdown.js', dirname( __FILE__ ) ), 
 					'condition' => 'function() { return !!document.querySelector( \'[data-markdown]\' ); }'
 				), 
@@ -1057,7 +1053,7 @@ if ( ! class_exists( 'Reveal_Presentations' ) ) {
 					'callback' => 'function() { hljs.initHighlightingOnLoad(); }'
 				), 
 				array(
-					'src' => plugins_url( 'reveal-js/plugin/zoom-js/zoom.js', dirname( __FILE__ ) ), 
+					'src' => plugins_url( 'reveal-js/plugin/zoom/zoom.js', dirname( __FILE__ ) ),
 					'async' => true, 
 					'condition' => 'function() { return !!document.body.classList; }'
 				), 
@@ -1087,11 +1083,9 @@ var RJSSignageConfig = <?php echo json_encode( $sign_settings ) ?>;
 	}
 }*/
 RJSInitConfig.dependencies = [
-	{ src: '<?php echo $jsurl ?>lib/js/classList.js' , condition: function() { return !document.body.classList; } },
-	{ src: '<?php echo $jsurl ?>plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 	{ src: '<?php echo $jsurl ?>plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 	{ src: '<?php echo $jsurl ?>plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-	{ src: '<?php echo $jsurl ?>plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+	{ src: '<?php echo $jsurl ?>plugin/zoom/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
 	{ src: '<?php echo $jsurl ?>plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
 ]
 Reveal.initialize( RJSInitConfig );
@@ -1162,11 +1156,9 @@ if ( RJSSignageConfig.poll ) {
 			
 			wp_register_style( 'theme-base', get_stylesheet_uri(), array(), $this->version, 'all' );
 			wp_register_style( 'reveal-js-presentations', plugins_url( 'css/reveal-js-presentations.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
-			wp_register_style( 'reveal-js', plugins_url( 'reveal-js/css/reveal.css', dirname( __FILE__ ) ), array( 'reveal-js-presentations' ), $this->version, 'all' );
-			wp_register_style( 'reveal-theme', plugins_url( sprintf( 'reveal-js/css/theme/%s.css', $options['theme'] ), dirname( __FILE__ ) ), array( 'reveal-js' ), $this->version, 'all' );
-			wp_register_style( 'reveal-syntax', plugins_url( 'reveal-js/lib/css/zenburn.css', dirname( __FILE__ ) ), array(), $this->version, 'all' );
+			wp_register_style( 'reveal-js', plugins_url( 'reveal-js/dist/reveal.css', dirname( __FILE__ ) ), array( 'reveal-js-presentations' ), $this->version, 'all' );
+			wp_register_style( 'reveal-theme', plugins_url( sprintf( 'reveal-js/dist/theme/%s.css', $options['theme'] ), dirname( __FILE__ ) ), array( 'reveal-js' ), $this->version, 'all' );
 			wp_enqueue_style( 'reveal-theme' );
-			wp_enqueue_style( 'reveal-syntax' );
 		}
 		
 		/**
@@ -1562,13 +1554,8 @@ if ( RJSSignageConfig.poll ) {
 				
 			$css = $this->compile_scss( $css );
 			
-			if ( ! class_exists( 'safecss_class' ) )
-				require_once( plugin_dir_path( dirname( __FILE__ ) ) . '/classes/class-safecss-class.php' );
-			
-			safecss_class();
 			$csstidy = new csstidy();
-			$csstidy->optimise = new safecss( $csstidy );
-	
+
 			$csstidy->set_cfg( 'remove_bslash',              false );
 			$csstidy->set_cfg( 'compress_colors',            true );
 			$csstidy->set_cfg( 'compress_font-weight',       true );
@@ -1591,12 +1578,15 @@ if ( RJSSignageConfig.poll ) {
 			if ( empty( $sass ) )
 				return null;
 				
-			require_once( dirname( __FILE__ ) . '/inc/preprocessors/scss.inc.php' );
-			$compiler = new scssc();
+			$compiler = new ScssPhp\ScssPhp\Compiler();
+            $scss = null;
 			try {
-				return $compiler->compile( $sass );
+                $scss = $compiler->compileString( $sass );
+                return $scss->getCss();
 			} catch ( Exception $e ) {
 				return $sass;
+			} catch ( \ScssPhp\ScssPhp\Exception\SassException $e ) {
+                return $sass;
 			}
 		}
 	}

@@ -5,9 +5,11 @@
 
 **Requires at least:** 4.6
 
-**Tested up to:** 4.7
+**Tested up to:** 6.7.2
 
-**Stable tag:** 1.3
+**Stable tag:** 1.4
+
+**Requires PHP:** 8.1
 
 **License:** GPLv2 or later
 
@@ -119,6 +121,11 @@ Those are known in reveal.js as "fragments". To use them, you will first need to
 `
 
 ## Changelog ##
+
+### 1.4 ###
+
+* Removes JetPack dependencies
+* Updates reveal.js to 5.2.1
 
 ### 1.3 ###
 

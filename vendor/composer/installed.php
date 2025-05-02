@@ -43,6 +43,15 @@
             ),
             'dev_requirement' => false,
         ),
+        'scssphp/scssphp' => array(
+            'pretty_version' => '1.x-dev',
+            'version' => '1.9999999.9999999.9999999-dev',
+            'reference' => '63d1157457e5554edf00b0c1fabab4c1511d2520',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../scssphp/scssphp',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'ten321/reveal-js-presentations' => array(
             'pretty_version' => '1.3',
             'version' => '1.3.0.0',

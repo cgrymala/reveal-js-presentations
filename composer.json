@@ -34,7 +34,8 @@
   "require": {
     "php": "^7.4|>=8.4",
     "oomphinc/composer-installers-extender": "dev-master",
-    "cerdic/css-tidy": "dev-master"
+    "cerdic/css-tidy": "dev-master",
+    "scssphp/scssphp": "1.x-dev"
   },
   "extra": {
     "installer-paths": {

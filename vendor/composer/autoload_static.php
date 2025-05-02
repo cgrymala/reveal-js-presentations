@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInitccd5aef9b19c2752721cbdc58e394d5d
 {
     public static $prefixLengthsPsr4 = array (
+        'S' => 
+        array (
+            'ScssPhp\\ScssPhp\\' => 16,
+        ),
         'O' => 
         array (
             'OomphInc\\ComposerInstallersExtender\\' => 36,
@@ -18,6 +22,10 @@ class ComposerStaticInitccd5aef9b19c2752721cbdc58e394d5d
     );
 
     public static $prefixDirsPsr4 = array (
+        'ScssPhp\\ScssPhp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/scssphp/scssphp/src',
+        ),
         'OomphInc\\ComposerInstallersExtender\\' => 
         array (
             0 => __DIR__ . '/..' . '/oomphinc/composer-installers-extender/src',
