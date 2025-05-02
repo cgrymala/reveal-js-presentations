@@ -9,8 +9,6 @@ if ( ! function_exists( 'safecss_class' ) ) {
 		if ( class_exists('safecss') )
 			return;
 	
-		require_once( dirname( __FILE__ ) . '/inc/csstidy/class.csstidy.php' );
-	
 		class safecss extends csstidy_optimise {
 			function safecss( &$css ) {
 				return $this->csstidy_optimise( $css );
@@ -27,7 +25,7 @@ if ( ! function_exists( 'safecss_class' ) ) {
 				 **/
 				do_action( 'csstidy_optimize_postparse', $this );
 	
-				return parent::postparse();
+				parent::postparse();
 			}
 	
 			function subvalue() {
@@ -41,7 +39,7 @@ if ( ! function_exists( 'safecss_class' ) ) {
 				 **/
 				do_action( 'csstidy_optimize_subvalue', $this );
 	
-				return parent::subvalue();
+				parent::subvalue();
 			}
 		}
 	}

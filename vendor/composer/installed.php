@@ -1,0 +1,56 @@
+<?php return array(
+    'root' => array(
+        'name' => 'ten321/reveal-js-presentations',
+        'pretty_version' => '1.3',
+        'version' => '1.3.0.0',
+        'reference' => null,
+        'type' => 'project',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        'cerdic/css-tidy' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '153f2f89afbdef7cc6475a31fa01a4691b89b442',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../cerdic/css-tidy',
+            'aliases' => array(
+                0 => '9999999-dev',
+            ),
+            'dev_requirement' => false,
+        ),
+        'composer/installers' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '5b390889ecbb17bfa69ed5a030fa2e6075a19ba0',
+            'type' => 'composer-plugin',
+            'install_path' => __DIR__ . '/./installers',
+            'aliases' => array(
+                0 => '2.x-dev',
+            ),
+            'dev_requirement' => false,
+        ),
+        'oomphinc/composer-installers-extender' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => 'cbf4b6f9a24153b785d09eee755b995ba87bd5f9',
+            'type' => 'composer-plugin',
+            'install_path' => __DIR__ . '/../oomphinc/composer-installers-extender',
+            'aliases' => array(
+                0 => '9999999-dev',
+            ),
+            'dev_requirement' => false,
+        ),
+        'ten321/reveal-js-presentations' => array(
+            'pretty_version' => '1.3',
+            'version' => '1.3.0.0',
+            'reference' => null,
+            'type' => 'project',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);

@@ -1,0 +1,46 @@
+{
+  "name": "ten321/reveal-js-presentations",
+  "description": "Reveal JS Presentations for WordPress",
+  "version": "1.3",
+  "authors": [
+    {
+      "name": "Curtiss Grymala",
+      "email": "curtiss@ten-321.com"
+    }
+  ],
+  "config": {
+    "vendor-dir": "vendor",
+    "preferred-install": "dist",
+    "platform": {
+      "php": "7.4"
+    },
+    "allow-plugins": {
+      "composer/installers": true,
+      "oomphinc/composer-installers-extender": true
+    }
+  },
+  "type": "project",
+  "license": "Proprietary",
+  "minimum-stability": "dev",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org",
+      "only": [
+        "wpackagist-plugin/*"
+      ]
+    }
+  ],
+  "require": {
+    "php": "^7.4|>=8.4",
+    "oomphinc/composer-installers-extender": "dev-master",
+    "cerdic/css-tidy": "dev-master"
+  },
+  "extra": {
+    "installer-paths": {
+      "inc/{$name}": [
+        "cerdic/css-tidy"
+      ]
+    }
+  }
+}
